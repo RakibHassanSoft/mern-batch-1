@@ -223,4 +223,931 @@ The design won't change — you're just adding behavior behind these same compon
 
 ---
 
+## 9. Full Source Code (copy & paste)
+
+Every file below is complete. Create the file at the given path and paste the code. Create files in this order (data → components → pages → config) so imports resolve.
+
+---
+
+### `lib/data.ts`
+
+```ts
+// Static sample data so the design has something to show.
+// Later you will replace this with data from your Node.js backend.
+
+export type BlogCard = {
+  id: number;
+  title: string;
+  excerpt: string;   // short preview text
+  content: string;   // full text (used on the single-post page)
+  author: string;
+  date: string;
+  category: string;
+  image: string;     // any image URL
+};
+
+export const blogCards: BlogCard[] = [
+  {
+    id: 1,
+    title: "Getting Started with Next.js",
+    excerpt:
+      "Next.js makes building React apps simple with file-based routing and zero config.",
+    content:
+      "Next.js is a React framework that gives you routing, optimisation, and a great developer experience out of the box. In this post we walk through creating your first app, adding pages, and understanding the App Router.",
+    author: "Sara Khan",
+    date: "Jul 20, 2026",
+    category: "Next.js",
+    image: "https://picsum.photos/seed/next/600/400",
+  },
+  {
+    id: 2,
+    title: "Understanding Tailwind CSS",
+    excerpt:
+      "Style your app quickly using utility classes instead of writing custom CSS files.",
+    content:
+      "Tailwind CSS is a utility-first framework. Instead of writing CSS, you compose small classes like flex, p-4, and text-center directly in your markup. This post explains the mindset and the most useful classes.",
+    author: "Aman Verma",
+    date: "Jul 18, 2026",
+    category: "CSS",
+    image: "https://picsum.photos/seed/tailwind/600/400",
+  },
+  {
+    id: 3,
+    title: "REST APIs with Node.js",
+    excerpt:
+      "Learn how to build a clean CRUD API using Express and MongoDB with Mongoose.",
+    content:
+      "A REST API exposes your data over HTTP methods: GET, POST, PUT, and DELETE. Using Express and Mongoose you can build a full CRUD backend quickly. Here is how the pieces fit together.",
+    author: "Priya Singh",
+    date: "Jul 15, 2026",
+    category: "Node.js",
+    image: "https://picsum.photos/seed/node/600/400",
+  },
+  {
+    id: 4,
+    title: "TypeScript for Beginners",
+    excerpt:
+      "Add types to your JavaScript to catch bugs early and get better autocomplete.",
+    content:
+      "TypeScript is JavaScript with types. It catches mistakes before you run your code and makes large projects safer to change. This post covers the basics every React developer needs.",
+    author: "Sara Khan",
+    date: "Jul 12, 2026",
+    category: "TypeScript",
+    image: "https://picsum.photos/seed/ts/600/400",
+  },
+  {
+    id: 5,
+    title: "Git & GitHub Essentials",
+    excerpt:
+      "Track your code, collaborate with others, and never lose your work again.",
+    content:
+      "Git is a version control system and GitHub hosts your repositories online. Together they let you save snapshots of your project and work with a team. Learn the core commands here.",
+    author: "Aman Verma",
+    date: "Jul 09, 2026",
+    category: "Git",
+    image: "https://picsum.photos/seed/git/600/400",
+  },
+  {
+    id: 6,
+    title: "How the Web Works",
+    excerpt:
+      "From typing a URL to seeing a page — understand the request/response cycle.",
+    content:
+      "When you visit a website, your browser asks DNS for an IP address, connects to a server, sends an HTTP request, and renders the response. Understanding this makes everything else easier.",
+    author: "Priya Singh",
+    date: "Jul 05, 2026",
+    category: "Web",
+    image: "https://picsum.photos/seed/web/600/400",
+  },
+];
+```
+
+---
+
+### `app/globals.css`
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Small global defaults. Tailwind handles most styling via classes. */
+body {
+  @apply bg-slate-50 text-slate-800 antialiased;
+}
+```
+
+---
+
+### `app/layout.tsx`
+
+```tsx
+import type { Metadata } from "next";
+import { Poppins } from "next/font/google";
+import "./globals.css";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+
+// Load a clean Google font for the whole site
+const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
+
+export const metadata: Metadata = {
+  title: "DevBlog — Share what you learn",
+  description: "A simple blog built with Next.js and Tailwind CSS.",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      {/* min-h-screen + flex-col keeps the footer at the bottom on short pages */}
+      <body className={`${poppins.className} min-h-screen flex flex-col`}>
+        <Navbar />
+        {/* flex-1 makes the page content grow to fill remaining space */}
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </body>
+    </html>
+  );
+}
+```
+
+---
+
+### `components/Navbar.tsx`
+
+```tsx
+import Link from "next/link";
+
+// Top navigation bar. Static links only — no login logic yet.
+export default function Navbar() {
+  return (
+    <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
+      <nav className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        {/* Logo / brand */}
+        <Link href="/" className="text-xl font-bold text-indigo-600">
+          Dev<span className="text-slate-900">Blog</span>
+        </Link>
+
+        {/* Links */}
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Link
+            href="/"
+            className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition"
+          >
+            Home
+          </Link>
+          <Link
+            href="/dashboard"
+            className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition"
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/login"
+            className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition"
+          >
+            Login
+          </Link>
+          {/* Primary button style */}
+          <Link
+            href="/register"
+            className="text-sm font-medium bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+          >
+            Sign Up
+          </Link>
+        </div>
+      </nav>
+    </header>
+  );
+}
+```
+
+---
+
+### `components/Footer.tsx`
+
+```tsx
+import Link from "next/link";
+
+// Simple footer shown on every page (added in layout.tsx).
+export default function Footer() {
+  return (
+    <footer className="bg-white border-t border-slate-200 mt-12">
+      <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p className="text-sm text-slate-500">
+          © 2026 DevBlog. Built with Next.js & Tailwind CSS.
+        </p>
+        <div className="flex gap-4">
+          <Link href="/" className="text-sm text-slate-500 hover:text-indigo-600">
+            Home
+          </Link>
+          <Link href="/dashboard" className="text-sm text-slate-500 hover:text-indigo-600">
+            Dashboard
+          </Link>
+        </div>
+      </div>
+    </footer>
+  );
+}
+```
+
+---
+
+### `components/Button.tsx`
+
+```tsx
+import Link from "next/link";
+
+// A reusable button that can render as a real <button> or a <Link>.
+// variant controls the color style.
+
+type ButtonProps = {
+  children: React.ReactNode;
+  href?: string;                          // if given, renders a Link
+  variant?: "primary" | "outline" | "danger";
+  type?: "button" | "submit";
+  className?: string;
+};
+
+// Base classes shared by all variants
+const base =
+  "inline-flex items-center justify-center text-sm font-medium px-4 py-2 rounded-lg transition";
+
+// Different color styles
+const styles = {
+  primary: "bg-indigo-600 text-white hover:bg-indigo-700",
+  outline: "border border-slate-300 text-slate-700 hover:bg-slate-100",
+  danger: "bg-red-600 text-white hover:bg-red-700",
+};
+
+export default function Button({
+  children,
+  href,
+  variant = "primary",
+  type = "button",
+  className = "",
+}: ButtonProps) {
+  const classes = `${base} ${styles[variant]} ${className}`;
+
+  // If href is passed, render a navigation link that looks like a button
+  if (href) {
+    return (
+      <Link href={href} className={classes}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <button type={type} className={classes}>
+      {children}
+    </button>
+  );
+}
+```
+
+---
+
+### `components/InputField.tsx`
+
+```tsx
+// A labelled text input, reused across the login/register/card forms.
+
+type InputFieldProps = {
+  label: string;
+  type?: string;        // "text" | "email" | "password" ...
+  name: string;
+  placeholder?: string;
+  defaultValue?: string;
+};
+
+export default function InputField({
+  label,
+  type = "text",
+  name,
+  placeholder,
+  defaultValue,
+}: InputFieldProps) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={name} className="text-sm font-medium text-slate-700">
+        {label}
+      </label>
+      <input
+        id={name}
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        defaultValue={defaultValue}
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+      />
+    </div>
+  );
+}
+```
+
+---
+
+### `components/TextareaField.tsx`
+
+```tsx
+// A labelled multi-line text area, used for the blog card content.
+
+type TextareaFieldProps = {
+  label: string;
+  name: string;
+  placeholder?: string;
+  defaultValue?: string;
+  rows?: number;
+};
+
+export default function TextareaField({
+  label,
+  name,
+  placeholder,
+  defaultValue,
+  rows = 6,
+}: TextareaFieldProps) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={name} className="text-sm font-medium text-slate-700">
+        {label}
+      </label>
+      <textarea
+        id={name}
+        name={name}
+        rows={rows}
+        placeholder={placeholder}
+        defaultValue={defaultValue}
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm resize-y
+                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+      />
+    </div>
+  );
+}
+```
+
+---
+
+### `components/BlogCard.tsx`
+
+```tsx
+import Link from "next/link";
+import Image from "next/image";
+import type { BlogCard as BlogCardType } from "@/lib/data";
+
+// A single blog card in the grid.
+// showActions = true adds Edit/Delete buttons (used on the Dashboard).
+
+type BlogCardProps = {
+  card: BlogCardType;
+  showActions?: boolean;
+};
+
+export default function BlogCard({ card, showActions = false }: BlogCardProps) {
+  return (
+    <article className="group bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition">
+      {/* Cover image */}
+      <div className="relative h-48 w-full overflow-hidden">
+        <Image
+          src={card.image}
+          alt={card.title}
+          fill
+          className="object-cover group-hover:scale-105 transition duration-300"
+        />
+        {/* Category pill floating on top of the image */}
+        <span className="absolute top-3 left-3 bg-indigo-600 text-white text-xs font-medium px-2.5 py-1 rounded-full">
+          {card.category}
+        </span>
+      </div>
+
+      {/* Text content */}
+      <div className="p-5">
+        <h3 className="text-lg font-semibold text-slate-900 line-clamp-1">
+          {card.title}
+        </h3>
+        <p className="mt-2 text-sm text-slate-600 line-clamp-2">{card.excerpt}</p>
+
+        {/* Author + date row */}
+        <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+          <span>{card.author}</span>
+          <span>{card.date}</span>
+        </div>
+
+        {/* Read more link */}
+        <Link
+          href={`/blog/${card.id}`}
+          className="mt-4 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-800"
+        >
+          Read more →
+        </Link>
+
+        {/* Optional Edit / Delete actions (Dashboard only) */}
+        {showActions && (
+          <div className="mt-4 flex gap-2 border-t border-slate-100 pt-4">
+            <Link
+              href={`/dashboard/edit/${card.id}`}
+              className="flex-1 text-center text-sm font-medium border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition"
+            >
+              Edit
+            </Link>
+            <button
+              className="flex-1 text-sm font-medium bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition"
+            >
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+```
+
+---
+
+### `components/CardForm.tsx`
+
+```tsx
+import InputField from "./InputField";
+import TextareaField from "./TextareaField";
+import Button from "./Button";
+import type { BlogCard } from "@/lib/data";
+
+// Shared form for BOTH creating and editing a card.
+// If `card` is passed, the fields are pre-filled (edit mode).
+
+type CardFormProps = {
+  card?: BlogCard;       // undefined = create mode, provided = edit mode
+  heading: string;
+  submitLabel: string;
+};
+
+export default function CardForm({ card, heading, submitLabel }: CardFormProps) {
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-10">
+      <h1 className="text-2xl font-bold text-slate-900">{heading}</h1>
+      <p className="mt-1 text-sm text-slate-500">
+        Fill in the details below. (Static form — no saving yet.)
+      </p>
+
+      {/* Card container */}
+      <form className="mt-6 bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col gap-5">
+        <InputField
+          label="Title"
+          name="title"
+          placeholder="Enter a catchy title"
+          defaultValue={card?.title}
+        />
+
+        <InputField
+          label="Category"
+          name="category"
+          placeholder="e.g. Next.js"
+          defaultValue={card?.category}
+        />
+
+        <InputField
+          label="Cover Image URL"
+          name="image"
+          placeholder="https://..."
+          defaultValue={card?.image}
+        />
+
+        <InputField
+          label="Short Excerpt"
+          name="excerpt"
+          placeholder="One-line summary shown on the card"
+          defaultValue={card?.excerpt}
+        />
+
+        <TextareaField
+          label="Content"
+          name="content"
+          placeholder="Write your full post here..."
+          defaultValue={card?.content}
+        />
+
+        {/* Action buttons */}
+        <div className="flex gap-3 pt-2">
+          <Button type="submit" variant="primary">
+            {submitLabel}
+          </Button>
+          <Button href="/dashboard" variant="outline">
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+```
+
+---
+
+### `app/page.tsx`  (Public Home)
+
+```tsx
+import Link from "next/link";
+import BlogCard from "@/components/BlogCard";
+import { blogCards } from "@/lib/data";
+
+// PUBLIC HOME PAGE — anyone can see all the cards here.
+export default function HomePage() {
+  return (
+    <div>
+      {/* ---------- Hero section ---------- */}
+      <section className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 py-16 text-center">
+          <span className="inline-block bg-indigo-50 text-indigo-600 text-xs font-medium px-3 py-1 rounded-full">
+            Welcome to DevBlog
+          </span>
+          <h1 className="mt-4 text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight">
+            Share what you <span className="text-indigo-600">learn</span>
+          </h1>
+          <p className="mt-4 max-w-xl mx-auto text-slate-600">
+            Read posts from developers, or sign up to write and manage your own.
+          </p>
+          <div className="mt-8 flex items-center justify-center gap-3">
+            <Link
+              href="/register"
+              className="bg-indigo-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition"
+            >
+              Start Writing
+            </Link>
+            <Link
+              href="#posts"
+              className="border border-slate-300 text-slate-700 text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-slate-100 transition"
+            >
+              Browse Posts
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Cards grid ---------- */}
+      <section id="posts" className="max-w-6xl mx-auto px-4 py-12">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-slate-900">Latest Posts</h2>
+          <span className="text-sm text-slate-500">{blogCards.length} posts</span>
+        </div>
+
+        {/* Responsive grid: 1 column on mobile, 2 on tablet, 3 on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {blogCards.map((card) => (
+            <BlogCard key={card.id} card={card} />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+```
+
+---
+
+### `app/blog/[id]/page.tsx`  (Single Post — public)
+
+```tsx
+import Link from "next/link";
+import Image from "next/image";
+import { blogCards } from "@/lib/data";
+
+// SINGLE POST PAGE — public. Reads the :id from the URL and shows one card.
+// Static: we just find the card in our sample array.
+
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const card = blogCards.find((c) => c.id === Number(id));
+
+  // Simple fallback if the id doesn't exist
+  if (!card) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+        <h1 className="text-2xl font-bold text-slate-900">Post not found</h1>
+        <Link href="/" className="mt-4 inline-block text-indigo-600 hover:underline">
+          ← Back to home
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <article className="max-w-3xl mx-auto px-4 py-10">
+      {/* Back link */}
+      <Link
+        href="/"
+        className="text-sm text-slate-500 hover:text-indigo-600 transition"
+      >
+        ← Back to all posts
+      </Link>
+
+      {/* Category + meta */}
+      <div className="mt-6 flex items-center gap-3">
+        <span className="bg-indigo-600 text-white text-xs font-medium px-2.5 py-1 rounded-full">
+          {card.category}
+        </span>
+        <span className="text-sm text-slate-500">{card.date}</span>
+      </div>
+
+      {/* Title */}
+      <h1 className="mt-4 text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+        {card.title}
+      </h1>
+
+      {/* Author */}
+      <div className="mt-4 flex items-center gap-3">
+        <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold">
+          {card.author.charAt(0)}
+        </div>
+        <span className="text-sm font-medium text-slate-700">{card.author}</span>
+      </div>
+
+      {/* Cover image */}
+      <div className="relative h-64 sm:h-80 w-full mt-8 rounded-xl overflow-hidden">
+        <Image src={card.image} alt={card.title} fill className="object-cover" />
+      </div>
+
+      {/* Body text */}
+      <div className="mt-8 text-slate-700 leading-relaxed space-y-4">
+        <p className="text-lg text-slate-800 font-medium">{card.excerpt}</p>
+        <p>{card.content}</p>
+        <p>{card.content}</p>
+      </div>
+    </article>
+  );
+}
+```
+
+---
+
+### `app/login/page.tsx`
+
+```tsx
+import Link from "next/link";
+import InputField from "@/components/InputField";
+import Button from "@/components/Button";
+
+// LOGIN PAGE — static form. No auth logic; just the design.
+export default function LoginPage() {
+  return (
+    // Center the card vertically and horizontally
+    <div className="flex items-center justify-center px-4 py-16">
+      <div className="w-full max-w-md">
+        {/* Card */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+          <h1 className="text-2xl font-bold text-slate-900 text-center">
+            Welcome back
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 text-center">
+            Log in to manage your posts.
+          </p>
+
+          <form className="mt-6 flex flex-col gap-4">
+            <InputField
+              label="Email"
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+            />
+            <InputField
+              label="Password"
+              type="password"
+              name="password"
+              placeholder="••••••••"
+            />
+
+            <Button type="submit" variant="primary" className="w-full">
+              Log In
+            </Button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-slate-500">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="text-indigo-600 font-medium hover:underline">
+              Sign up
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+### `app/register/page.tsx`
+
+```tsx
+import Link from "next/link";
+import InputField from "@/components/InputField";
+import Button from "@/components/Button";
+
+// REGISTER PAGE — static form. Same design language as login.
+export default function RegisterPage() {
+  return (
+    <div className="flex items-center justify-center px-4 py-16">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+          <h1 className="text-2xl font-bold text-slate-900 text-center">
+            Create your account
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 text-center">
+            Start writing and sharing your posts.
+          </p>
+
+          <form className="mt-6 flex flex-col gap-4">
+            <InputField
+              label="Full Name"
+              name="name"
+              placeholder="Sara Khan"
+            />
+            <InputField
+              label="Email"
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+            />
+            <InputField
+              label="Password"
+              type="password"
+              name="password"
+              placeholder="At least 6 characters"
+            />
+
+            <Button type="submit" variant="primary" className="w-full">
+              Create Account
+            </Button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-slate-500">
+            Already have an account?{" "}
+            <Link href="/login" className="text-indigo-600 font-medium hover:underline">
+              Log in
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+### `app/dashboard/page.tsx`  (User's cards + Edit/Delete)
+
+```tsx
+import BlogCard from "@/components/BlogCard";
+import Button from "@/components/Button";
+import { blogCards } from "@/lib/data";
+
+// DASHBOARD — the logged-in user's own cards, with Edit/Delete actions.
+// Static: we just reuse the sample data and pretend it belongs to the user.
+export default function DashboardPage() {
+  // Pretend the logged-in user owns the first 3 posts
+  const myCards = blogCards.slice(0, 3);
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-10">
+      {/* Header row: title + "Create" button */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">My Posts</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Manage the cards you have created.
+          </p>
+        </div>
+        <Button href="/dashboard/create" variant="primary">
+          + New Post
+        </Button>
+      </div>
+
+      {/* Empty-state example (shown only if there are no cards) */}
+      {myCards.length === 0 ? (
+        <div className="mt-10 text-center bg-white border border-dashed border-slate-300 rounded-xl p-12">
+          <p className="text-slate-500">You haven&apos;t created any posts yet.</p>
+          <div className="mt-4">
+            <Button href="/dashboard/create" variant="primary">
+              Create your first post
+            </Button>
+          </div>
+        </div>
+      ) : (
+        // Grid of the user's cards WITH edit/delete actions
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {myCards.map((card) => (
+            <BlogCard key={card.id} card={card} showActions />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### `app/dashboard/create/page.tsx`
+
+```tsx
+import CardForm from "@/components/CardForm";
+
+// CREATE CARD PAGE — reuses the shared CardForm in "create" mode (empty fields).
+export default function CreateCardPage() {
+  return <CardForm heading="Create a new post" submitLabel="Publish Post" />;
+}
+```
+
+---
+
+### `app/dashboard/edit/[id]/page.tsx`
+
+```tsx
+import Link from "next/link";
+import CardForm from "@/components/CardForm";
+import { blogCards } from "@/lib/data";
+
+// EDIT CARD PAGE — reuses CardForm in "edit" mode (fields pre-filled).
+// Static: find the card by id and pass it into the form.
+export default async function EditCardPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const card = blogCards.find((c) => c.id === Number(id));
+
+  if (!card) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+        <h1 className="text-2xl font-bold text-slate-900">Post not found</h1>
+        <Link
+          href="/dashboard"
+          className="mt-4 inline-block text-indigo-600 hover:underline"
+        >
+          ← Back to dashboard
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <CardForm card={card} heading="Edit post" submitLabel="Save Changes" />
+  );
+}
+```
+
+---
+
+### `tailwind.config.ts`
+
+```ts
+import type { Config } from "tailwindcss";
+
+// Tells Tailwind which files to scan for class names.
+const config: Config = {
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},   // add custom colors/fonts here later if you want
+  },
+  plugins: [],
+};
+
+export default config;
+```
+
+---
+
+### `next.config.mjs`
+
+```js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    // Allow images loaded from picsum.photos (the sample image source).
+    remotePatterns: [
+      { protocol: "https", hostname: "picsum.photos" },
+    ],
+  },
+};
+
+export default nextConfig;
+```
+
+---
+
 **Summary:** you now have every page and component for a blog, fully styled with Tailwind and built from reusable pieces. Drop it into a Next.js app, run `npm run dev`, and start designing — then connect your Node.js backend when ready.
