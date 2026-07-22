@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Small global defaults. Tailwind handles most styling via classes. */
+body {
+  @apply bg-slate-50 text-slate-800 antialiased;
+}
