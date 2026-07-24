@@ -66,6 +66,7 @@ Request → server.js → route → (protect reads the cookie?) → controller �
 2. **MongoDB** — pick ONE:
    - **Local**: install MongoDB Community Server → URL is `mongodb://127.0.0.1:27017/devblog`.
    - **MongoDB Atlas (free cloud, easiest)**: create a cluster at https://www.mongodb.com/atlas → **Connect → Drivers** → copy the string.
+   - **Atlas**: install MongoDB Community Server → URL is `mongodb+srv://<db_username>:<db_password>@cluster0.drqortc.mongodb.net/?appName=Cluster0`.
 3. **Postman** — https://www.postman.com/downloads (to test the API). Postman stores cookies automatically, which is perfect for this cookie-based setup.
 
 ---
