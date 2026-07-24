@@ -1,6 +1,6 @@
 # DevBlog Backend — Node.js + Express + MongoDB (Beginner Tutorial + Project)
 
-This is the **server** for the static DevBlog frontend. It handles **register, login, logout, and card CRUD** (create, read, update, delete). The data it returns matches the frontend's `BlogCard` shape **exactly**, so you can plug the two together with no changes.
+This is the **server** for the static DevBlog frontend. It handles **register, login, logout, and card CRUD** (create, read, update, delete). The card data it returns matches the frontend's `BlogCard` shape (`id`, `title`, `excerpt`, `content`, `author`, `date`, `category`, `image`), so you can plug the two together with no changes.
 
 Two things that make this version production-friendly:
 
@@ -44,7 +44,7 @@ Blog Backend (Node.js)/
 │   └── auth.middleware.js       ← "protect" = must be logged in (reads cookie)
 │
 └── card/                        ← 📝 EVERYTHING about cards
-    ├── card.model.js            ← card shape (matches the frontend)
+    ├── card.model.js            ← card shape
     ├── card.controller.js       ← the CRUD logic
     └── card.routes.js           ← /api/cards/...
 ```
@@ -200,16 +200,13 @@ Postman keeps a **cookie jar** per domain, so after you log in it sends the cook
 - **Response (201):**
 ```json
 {
+  "id": "66a3f2a0e5b1a2c3d4e5f610",
   "title": "Getting Started with Next.js",
   "excerpt": "Next.js makes building React apps simple.",
   "content": "Full article text goes here...",
+  "author": "Sara Khan",
   "category": "Next.js",
   "image": "https://picsum.photos/seed/next/600/400",
-  "author": "Sara Khan",
-  "createdBy": "66a3f1c2e5b1a2c3d4e5f601",
-  "createdAt": "2026-07-24T10:05:00.000Z",
-  "updatedAt": "2026-07-24T10:05:00.000Z",
-  "id": "66a3f2a0e5b1a2c3d4e5f610",
   "date": "Jul 24, 2026"
 }
 ```
@@ -222,7 +219,7 @@ Postman keeps a **cookie jar** per domain, so after you log in it sends the cook
 
 ### ⑤ Get one card (public)
 
-- **GET** `http://localhost:5000/api/cards/<id>` → one card, or **404** if the id doesn't exist.
+- **GET** `http://localhost:5000/api/cards/<id>` → one card. (If the id doesn't exist you get `null` — the simplified version doesn't send a 404.)
 
 ### ⑥ Get my cards (needs login)
 
@@ -235,12 +232,12 @@ Postman keeps a **cookie jar** per domain, so after you log in it sends the cook
 ```json
 { "title": "Getting Started with Next.js (Updated)", "category": "React" }
 ```
-- **Response (200):** the updated card. Editing someone else's → **403** `{ "message": "You can only edit your own cards" }`.
+- **Response (200):** the updated card. If you try to edit a card that isn't yours, the query matches nothing and you get `null` back (nothing is changed).
 
 ### ⑧ Delete a card (owner only)
 
 - **DELETE** `http://localhost:5000/api/cards/<id>`
-- **Response (200):** `{ "message": "Card deleted", "id": "..." }`.
+- **Response (200):** `{ "message": "Card deleted" }`. (Only your own card is actually removed — a non-owner's delete simply matches nothing.)
 
 ### ⑨ Logout
 
@@ -418,7 +415,7 @@ export const connectDB = async () => {
 
 ### Step 5 — `user/user.model.js`
 
-The user shape. The `toJSON` transform hides the password and renames `_id` to `id`.
+The user shape. We keep it simple — just the fields. (We never send the password back to the client because the controllers return only `id`, `name`, and `email`.)
 
 ```js
 import mongoose from "mongoose";
@@ -431,16 +428,6 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-userSchema.set("toJSON", {
-  transform: (doc, ret) => {
-    ret.id = ret._id;
-    delete ret._id;
-    delete ret.__v;
-    delete ret.password;
-    return ret;
-  },
-});
 
 const User = mongoose.model("User", userSchema);
 export default User;
@@ -515,67 +502,53 @@ const cookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
-// ---------- REGISTER ----------
+// REGISTER — POST /api/users/register
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ message: "Email already registered" });
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, password: hashedPassword });
 
     const token = createToken(user);
-    res.cookie("token", token, cookieOptions); // <-- store token in a cookie
-    res.status(201).json({ user });
+    res.cookie("token", token, cookieOptions); // store token in a cookie
+    res.status(201).json({ user: { id: user._id, name: user.name, email: user.email } });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ---------- LOGIN ----------
+// LOGIN — POST /api/users/login
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
+    const isMatch = user && (await bcrypt.compare(password, user.password));
 
-    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const token = createToken(user);
-    res.cookie("token", token, cookieOptions); // <-- store token in a cookie
-    res.status(200).json({ user });
+    res.cookie("token", token, cookieOptions);
+    res.status(200).json({ user: { id: user._id, name: user.name, email: user.email } });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ---------- LOGOUT ----------
+// LOGOUT — POST /api/users/logout
 export const logout = async (req, res) => {
-  res.clearCookie("token", cookieOptions); // <-- remove the cookie
-  res.status(200).json({ message: "Logged out" });
+  res.clearCookie("token", cookieOptions);
+  res.json({ message: "Logged out" });
 };
 
-// ---------- GET CURRENT USER ----------
+// GET CURRENT USER — GET /api/users/me
 export const getMe = async (req, res) => {
-  res.status(200).json(req.user);
+  res.json(req.user);
 };
 ```
 
-**Line notes:** `httpOnly: true` is the key security setting. `secure` is off in development (so the cookie works over `http://localhost`) and on in production. `clearCookie` must use the same options to reliably remove it.
+**Line notes:** we don't hand-check the fields — the model's `required` rules do that. In `login` we only keep the one real check (wrong email/password) and combine both cases into a single `isMatch`. `httpOnly: true` is the key security setting; `secure` is off in development so the cookie works over `http://localhost`. `clearCookie` uses the same options so it reliably removes the cookie.
 
 ---
 
@@ -598,9 +571,9 @@ export default router;
 
 ---
 
-### Step 9 — `card/card.model.js` (matches the frontend)
+### Step 9 — `card/card.model.js`
 
-Its JSON output matches the frontend `BlogCard`: `_id` → `id`, and `createdAt` → a friendly `date`.
+Just the card fields. MongoDB stores the id as `_id` and adds `createdAt`/`updatedAt`; the controller's `format` helper (next step) turns those into the frontend's `id` and `date`.
 
 ```js
 import mongoose from "mongoose";
@@ -622,20 +595,6 @@ const cardSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-cardSchema.set("toJSON", {
-  transform: (doc, ret) => {
-    ret.id = ret._id;
-    ret.date = new Date(ret.createdAt).toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    });
-    delete ret._id;
-    delete ret.__v;
-    return ret;
-  },
-});
-
 const Card = mongoose.model("Card", cardSchema);
 export default Card;
 ```
@@ -644,16 +603,33 @@ export default Card;
 
 ### Step 10 — `card/card.controller.js`
 
-All five operations. Update/delete check the card belongs to `req.user` first (authorization).
+All five operations, kept short. A tiny `format` helper at the top shapes each card to match the frontend exactly (`id`, `date`, ...). For update/delete, the owner check is built **into the query** — `findOneAndUpdate({ _id, createdBy: req.user._id })` only touches a card that matches this id AND belongs to this user. No separate fetch-and-verify step.
 
 ```js
 import Card from "./card.model.js";
+
+// Shape a card to match the frontend exactly:
+// id, title, excerpt, content, author, date, category, image
+const format = (card) => ({
+  id: card._id,
+  title: card.title,
+  excerpt: card.excerpt,
+  content: card.content,
+  author: card.author,
+  category: card.category,
+  image: card.image,
+  date: new Date(card.createdAt).toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  }),
+});
 
 // GET ALL (PUBLIC)
 export const getCards = async (req, res) => {
   try {
     const cards = await Card.find().sort({ createdAt: -1 });
-    res.status(200).json(cards);
+    res.json(cards.map(format));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -663,8 +639,7 @@ export const getCards = async (req, res) => {
 export const getCard = async (req, res) => {
   try {
     const card = await Card.findById(req.params.id);
-    if (!card) return res.status(404).json({ message: "Card not found" });
-    res.status(200).json(card);
+    res.json(card ? format(card) : null);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -674,7 +649,7 @@ export const getCard = async (req, res) => {
 export const getMyCards = async (req, res) => {
   try {
     const cards = await Card.find({ createdBy: req.user._id }).sort({ createdAt: -1 });
-    res.status(200).json(cards);
+    res.json(cards.map(format));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -683,62 +658,43 @@ export const getMyCards = async (req, res) => {
 // CREATE (PROTECTED)
 export const createCard = async (req, res) => {
   try {
-    const { title, excerpt, content, category, image } = req.body;
-    if (!title || !excerpt || !content) {
-      return res.status(400).json({ message: "Title, excerpt and content are required" });
-    }
     const card = await Card.create({
-      title, excerpt, content, category, image,
+      ...req.body,
       author: req.user.name,   // from the logged-in user
-      createdBy: req.user._id,  // owner link
+      createdBy: req.user._id, // owner
     });
-    res.status(201).json(card);
+    res.status(201).json(format(card));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// UPDATE (PROTECTED + OWNER ONLY)
+// UPDATE (PROTECTED, OWNER ONLY)
 export const updateCard = async (req, res) => {
   try {
-    const card = await Card.findById(req.params.id);
-    if (!card) return res.status(404).json({ message: "Card not found" });
-
-    if (card.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "You can only edit your own cards" });
-    }
-
-    const { title, excerpt, content, category, image } = req.body;
-    if (title !== undefined) card.title = title;
-    if (excerpt !== undefined) card.excerpt = excerpt;
-    if (content !== undefined) card.content = content;
-    if (category !== undefined) card.category = category;
-    if (image !== undefined) card.image = image;
-
-    const updated = await card.save();
-    res.status(200).json(updated);
+    const card = await Card.findOneAndUpdate(
+      { _id: req.params.id, createdBy: req.user._id },
+      req.body,
+      { new: true }
+    );
+    res.json(card ? format(card) : null);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// DELETE (PROTECTED + OWNER ONLY)
+// DELETE (PROTECTED, OWNER ONLY)
 export const deleteCard = async (req, res) => {
   try {
-    const card = await Card.findById(req.params.id);
-    if (!card) return res.status(404).json({ message: "Card not found" });
-
-    if (card.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "You can only delete your own cards" });
-    }
-
-    await card.deleteOne();
-    res.status(200).json({ message: "Card deleted", id: req.params.id });
+    await Card.findOneAndDelete({ _id: req.params.id, createdBy: req.user._id });
+    res.json({ message: "Card deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 ```
+
+**Notes:** the `format` helper is the one place we map the database fields to the frontend's shape (`_id → id`, `createdAt → date`) — visible and easy to change, not hidden in the model. We also removed the manual "is the field present?" checks (the model's `required` rules handle that), and putting `createdBy: req.user._id` inside the query is the whole authorization — a non-owner simply matches nothing.
 
 ---
 

@@ -1,119 +1,86 @@
 import Card from "./card.model.js";
 
-// ---------- GET ALL CARDS (PUBLIC) ----------
-// GET /api/cards   -> everyone can see every card (like the home page)
+// Shape a card to match the frontend exactly:
+// id, title, excerpt, content, author, date, category, image
+const format = (card) => ({
+  id: card._id,
+  title: card.title,
+  excerpt: card.excerpt,
+  content: card.content,
+  author: card.author,
+  category: card.category,
+  image: card.image,
+  date: new Date(card.createdAt).toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  }),
+});
+
+// GET ALL CARDS (PUBLIC) — GET /api/cards
 export const getCards = async (req, res) => {
   try {
     const cards = await Card.find().sort({ createdAt: -1 }); // newest first
-    res.status(200).json(cards);
+    res.json(cards.map(format));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ---------- GET ONE CARD (PUBLIC) ----------
-// GET /api/cards/:id
+// GET ONE CARD (PUBLIC) — GET /api/cards/:id
 export const getCard = async (req, res) => {
   try {
     const card = await Card.findById(req.params.id);
-    if (!card) {
-      return res.status(404).json({ message: "Card not found" });
-    }
-    res.status(200).json(card);
+    res.json(card ? format(card) : null);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ---------- GET MY CARDS (PROTECTED) ----------
-// GET /api/cards/mine   -> only the logged-in user's own cards (the dashboard)
+// GET MY CARDS (PROTECTED) — GET /api/cards/mine
 export const getMyCards = async (req, res) => {
   try {
-    const cards = await Card.find({ createdBy: req.user._id }).sort({
-      createdAt: -1,
-    });
-    res.status(200).json(cards);
+    const cards = await Card.find({ createdBy: req.user._id }).sort({ createdAt: -1 });
+    res.json(cards.map(format));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ---------- CREATE CARD (PROTECTED) ----------
-// POST /api/cards   body: { title, excerpt, content, category, image }
+// CREATE CARD (PROTECTED) — POST /api/cards
 export const createCard = async (req, res) => {
   try {
-    const { title, excerpt, content, category, image } = req.body;
-
-    if (!title || !excerpt || !content) {
-      return res
-        .status(400)
-        .json({ message: "Title, excerpt and content are required" });
-    }
-
     const card = await Card.create({
-      title,
-      excerpt,
-      content,
-      category,
-      image,
-      author: req.user.name,    // author name comes from the logged-in user
-      createdBy: req.user._id,  // link the card to its owner
+      ...req.body,
+      author: req.user.name,   // author name from the logged-in user
+      createdBy: req.user._id, // owner
     });
-
-    res.status(201).json(card);
+    res.status(201).json(format(card));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ---------- UPDATE CARD (PROTECTED + OWNER ONLY) ----------
-// PUT /api/cards/:id
+// UPDATE CARD (PROTECTED, OWNER ONLY) — PUT /api/cards/:id
+// The owner check is part of the query: only a card with this id AND this owner is updated.
 export const updateCard = async (req, res) => {
   try {
-    const card = await Card.findById(req.params.id);
-    if (!card) {
-      return res.status(404).json({ message: "Card not found" });
-    }
-
-    // Only the owner may edit their card
-    if (card.createdBy.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: "You can only edit your own cards" });
-    }
-
-    // Update only the fields that were sent
-    const { title, excerpt, content, category, image } = req.body;
-    if (title !== undefined) card.title = title;
-    if (excerpt !== undefined) card.excerpt = excerpt;
-    if (content !== undefined) card.content = content;
-    if (category !== undefined) card.category = category;
-    if (image !== undefined) card.image = image;
-
-    const updated = await card.save();
-    res.status(200).json(updated);
+    const card = await Card.findOneAndUpdate(
+      { _id: req.params.id, createdBy: req.user._id },
+      req.body,
+      { new: true }
+    );
+    res.json(card ? format(card) : null);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ---------- DELETE CARD (PROTECTED + OWNER ONLY) ----------
-// DELETE /api/cards/:id
+// DELETE CARD (PROTECTED, OWNER ONLY) — DELETE /api/cards/:id
 export const deleteCard = async (req, res) => {
   try {
-    const card = await Card.findById(req.params.id);
-    if (!card) {
-      return res.status(404).json({ message: "Card not found" });
-    }
-
-    if (card.createdBy.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ message: "You can only delete your own cards" });
-    }
-
-    await card.deleteOne();
-    res.status(200).json({ message: "Card deleted", id: req.params.id });
+    await Card.findOneAndDelete({ _id: req.params.id, createdBy: req.user._id });
+    res.json({ message: "Card deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

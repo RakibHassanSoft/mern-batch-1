@@ -24,22 +24,5 @@ const cardSchema = new mongoose.Schema(
   { timestamps: true } // adds createdAt & updatedAt automatically
 );
 
-// Transform the JSON so it matches the frontend shape perfectly:
-// - _id  becomes  id
-// - createdAt  becomes a friendly "date" string like "Jul 20, 2026"
-cardSchema.set("toJSON", {
-  transform: (doc, ret) => {
-    ret.id = ret._id;
-    ret.date = new Date(ret.createdAt).toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    });
-    delete ret._id;
-    delete ret.__v;
-    return ret;
-  },
-});
-
 const Card = mongoose.model("Card", cardSchema);
 export default Card;
