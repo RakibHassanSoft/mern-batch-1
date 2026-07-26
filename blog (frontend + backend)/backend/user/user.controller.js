@@ -10,10 +10,14 @@ const createToken = (user) => {
 };
 
 // Helper: options for the token cookie.
+const isProduction = process.env.NODE_ENV === "production";
 const cookieOptions = {
   httpOnly: true, // JavaScript in the browser CANNOT read it -> safer
-  secure: process.env.NODE_ENV === "production", // HTTPS-only in production
-  sameSite: "lax",
+  secure: isProduction, // HTTPS-only in production (Render/Netlify use HTTPS)
+  // In production the frontend (Netlify) and backend (Render) are on DIFFERENT
+  // domains, so the cookie must be "none" + secure to be sent cross-site.
+  // Locally they share "localhost", so "lax" is fine.
+  sameSite: isProduction ? "none" : "lax",
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
