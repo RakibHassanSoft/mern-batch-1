@@ -1,21 +1,5 @@
 import Card from "./card.model.js";
-
-// Shape a card to match the frontend exactly:
-// id, title, excerpt, content, author, date, category, image
-const format = (card) => ({
-  id: card._id,
-  title: card.title,
-  excerpt: card.excerpt,
-  content: card.content,
-  author: card.author,
-  category: card.category,
-  image: card.image,
-  date: new Date(card.createdAt).toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  }),
-});
+import { format } from "./format.js";
 
 // GET ALL CARDS (PUBLIC) — GET /api/cards
 export const getCards = async (req, res) => {

@@ -129,6 +129,41 @@ const cards = await getCards();   // axios GET /api/cards under the hood
 
 ---
 
+## 3b. Every API Function at a Glance (GET / POST / PUT / DELETE)
+
+All server calls live in two small files. Each function is one line of intent. Here's the complete map so you always know which function does what, which HTTP method it uses, and whether it's public or protected.
+
+### Card functions — `lib/cards.ts`
+
+| Function | HTTP method | Endpoint | Client | Public/Protected |
+|----------|-------------|----------|--------|------------------|
+| `getCards()` | **GET** | `/api/cards` | `api` | 🌍 Public |
+| `getCard(id)` | **GET** | `/api/cards/:id` | `api` | 🌍 Public |
+| `getMyCards()` | **GET** | `/api/cards/mine` | `authApi` | 🔒 Protected |
+| `createCard(data)` | **POST** | `/api/cards` | `authApi` | 🔒 Protected |
+| `updateCard(id, data)` | **PUT** | `/api/cards/:id` | `authApi` | 🔒 Protected |
+| `deleteCard(id)` | **DELETE** | `/api/cards/:id` | `authApi` | 🔒 Protected |
+
+### Auth functions — `lib/auth.ts`
+
+| Function | HTTP method | Endpoint | Client |
+|----------|-------------|----------|--------|
+| `registerUser(name, email, password)` | **POST** | `/api/users/register` | `authApi` |
+| `loginUser(email, password)` | **POST** | `/api/users/login` | `authApi` |
+| `logoutUser()` | **POST** | `/api/users/logout` | `authApi` |
+| `getMe()` | **GET** | `/api/users/me` | `authApi` |
+
+### The four HTTP methods explained
+
+- **GET** — *read* data. `getCards()` reads all posts; `getCard(id)` reads one. Never changes anything.
+- **POST** — *create* new data. `createCard(data)` makes a new post; `registerUser(...)` makes a new account.
+- **PUT** — *update/replace* existing data. `updateCard(id, data)` edits a post you own.
+- **DELETE** — *remove* data. `deleteCard(id)` removes a post you own.
+
+Each frontend function maps 1-to-1 to a backend route with the **same method** — that's what makes the two sides line up.
+
+---
+
 ## 4. Tutorial: Connect the Static Blog to the Server (Step by Step)
 
 This is the main tutorial. You start with the **static blog** (the `Blog Project (Static)` folder — fake data, no server) and, step by step, turn it into a real app that talks to your Node.js backend. Do the steps **in order**. Each step says exactly which file to touch, gives the **full code**, and explains why.
@@ -690,15 +725,21 @@ frontend/
 │       ├── page.tsx               ← getMyCards() + deleteCard()
 │       ├── create/page.tsx        ← <CardForm> create
 │       └── edit/[id]/page.tsx     ← getCard() → <CardForm> edit
-└── components/
-    ├── Navbar.tsx                 ← getMe() to toggle login state + logout
-    ├── Footer.tsx
-    ├── Button.tsx
-    ├── InputField.tsx             ← controlled input
-    ├── TextareaField.tsx          ← controlled textarea
-    ├── BlogCard.tsx               ← card + optional Edit/Delete
-    └── CardForm.tsx               ← create & edit form (axios submit)
+├── components/
+│   ├── Navbar.tsx                 ← getMe() to toggle login state + logout
+│   ├── Footer.tsx
+│   ├── Button.tsx
+│   ├── InputField.tsx             ← controlled input
+│   ├── TextareaField.tsx          ← controlled textarea
+│   ├── BlogCard.tsx               ← card + optional Edit/Delete
+│   └── CardForm.tsx               ← create & edit form (axios submit)
+├── tests/                         ← unit tests (Vitest)
+│   ├── cards.test.ts              ← card helpers hit correct method + URL
+│   └── auth.test.ts               ← auth helpers hit correct endpoints
+└── vitest.config.ts               ← test config (@/ alias)
 ```
+
+> The **backend** has its own tests in `backend/tests/` (`format`, `cardController`, `authController`). See Section 7b for how to run both.
 
 ---
 
@@ -745,6 +786,44 @@ router.push("/dashboard");
 6. Logout → `authApi.post("/api/users/logout")` clears the cookie.
 
 You never store a token in `localStorage` — the httpOnly cookie is safer because JavaScript can't read it.
+
+---
+
+## 7b. Unit Testing — Make Sure Everything Works ✅
+
+Both sides ship with **unit tests** so you can prove each function works without clicking through the whole app. The tests **mock** the database and axios, so they run instantly and need no server or MongoDB.
+
+### Backend tests (Node's built-in test runner — no extra library)
+
+```bash
+cd backend
+npm install        # once
+npm test           # runs "node --test"
+```
+
+What they check (in `backend/tests/`):
+- `format.test.js` — the `format` helper turns `_id → id` and `createdAt → "Jul 24, 2026"`, and hides internal fields.
+- `cardController.test.js` — every CRUD method: **GET** all/one, **POST** create (author set from the user), **PUT** update (owner check in the query), **DELETE**. The `Card` model is mocked, so no DB is used.
+- `authController.test.js` — **register** hashes the password + sets the cookie + never returns the password; **login** succeeds with the right password and returns **401** with a wrong one.
+
+Expected result: **14 tests, 14 pass.**
+
+### Frontend tests (Vitest)
+
+```bash
+cd frontend
+npm install        # once
+npm test           # runs "vitest run"
+```
+
+What they check (in `frontend/tests/`):
+- `cards.test.ts` — each card helper calls the **right method + URL** and the **right client** (public `api` vs protected `authApi`): `getCards → GET /api/cards`, `createCard → POST /api/cards`, `updateCard → PUT /api/cards/:id`, `deleteCard → DELETE /api/cards/:id`, etc. axios is mocked.
+- `auth.test.ts` — `registerUser`, `loginUser`, `logoutUser`, `getMe` hit the correct `/api/users/...` endpoints and unwrap `res.data.user`.
+
+Expected result: **10 tests, 10 pass.**
+
+### Why this matters
+These tests are your safety net. If you later change a function and accidentally break the method or URL (say `POST` becomes `PUT`), the test fails immediately and tells you exactly where. New to testing? Read the **`Unit Testing Basics`** folder first — it teaches the ideas from zero.
 
 ---
 
