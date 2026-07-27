@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* পুরো পেজের background আর text color এখানে সেট করা হলো। */
+body {
+  @apply bg-slate-50 text-slate-800 antialiased;
+}

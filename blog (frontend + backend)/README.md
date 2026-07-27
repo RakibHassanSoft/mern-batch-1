@@ -4,13 +4,17 @@ This folder contains a **complete, working** blog app:
 
 ```
 blog (frontend + backend)/
-├── backend/     ← the Node.js + Express + MongoDB API (from the backend tutorial)
-└── frontend/    ← the Next.js app, wired to the backend with axios
+├── static/      ← the design ONLY (fake data) — the starting point, for comparison
+├── frontend/    ← the SAME design, wired to the backend with axios
+├── backend/     ← the Node.js + Express + MongoDB API
+└── STATIC-TO-CONNECTED.md   ← file-by-file "what to change and how" note
 ```
 
 Public visitors can read all posts. Registered users can log in, create, edit, and delete their own posts. Login uses an **httpOnly cookie**, and every request is made with **axios** — a **public** client for open routes and a **protected** client that carries the cookie.
 
-This README is a clear, follow-along guide. **Section 1** runs the finished app. **Section 4 is the main tutorial** — a step-by-step walkthrough that takes the *static blog* and connects it to the server, with the exact code at every step. Follow Section 4 and you'll be able to connect the static blog to your backend yourself.
+This README is a clear, follow-along guide. **Section 1** runs the finished app. **Section 4 is the main tutorial** — a step-by-step walkthrough that takes the *static blog* and connects it to the server, with the exact code at every step.
+
+> **Want to see the change directly?** Compare the `static/` and `frontend/` folders side by side. The **`STATIC-TO-CONNECTED.md`** file lists every single change (BEFORE → AFTER, with code and why) needed to turn `static/` into `frontend/`.
 
 ---
 
