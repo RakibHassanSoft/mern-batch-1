@@ -3,17 +3,30 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import BlogCard from "@/components/BlogCard";
-import { getCards } from "@/lib/cards";
-import type { Card } from "@/lib/types";
+import { api } from "@/lib/api"; // only the axios client — no wrapper functions
 
-// PUBLIC HOME PAGE — fetches all cards with the PUBLIC axios client.
+// The shape of a card (defined inline, since lib only has api.ts).
+type Card = {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  date: string;
+  category: string;
+  image: string;
+};
+
+// PUBLIC HOME PAGE — reads all cards.
 export default function HomePage() {
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getCards()
-      .then((data) => setCards(data))
+    // Direct axios call — public route, no login needed.
+    api
+      .get("/api/cards")
+      .then((res) => setCards(res.data)) // res.data = the array of cards
       .catch(() => setCards([]))
       .finally(() => setLoading(false));
   }, []);

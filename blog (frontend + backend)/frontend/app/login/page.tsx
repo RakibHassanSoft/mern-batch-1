@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import InputField from "@/components/InputField";
 import Button from "@/components/Button";
-import { loginUser } from "@/lib/auth";
+import { authApi } from "@/lib/api"; // protected client (sends/receives the cookie)
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,7 +19,8 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await loginUser(email, password); // sets the auth cookie
+      // Direct axios call — on success the server sets the login cookie.
+      await authApi.post("/api/users/login", { email, password });
       router.push("/dashboard");
       router.refresh();
     } catch {
@@ -37,20 +38,14 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
             {error && <p className="bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg">{error}</p>}
-
             <InputField label="Email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
             <InputField label="Password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-
-            <Button type="submit" variant="primary" className="w-full" disabled={loading}>
-              {loading ? "Logging in..." : "Log In"}
-            </Button>
+            <Button type="submit" variant="primary" className="w-full" disabled={loading}>{loading ? "Logging in..." : "Log In"}</Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-500">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-indigo-600 font-medium hover:underline">
-              Sign up
-            </Link>
+            <Link href="/register" className="text-indigo-600 font-medium hover:underline">Sign up</Link>
           </p>
         </div>
       </div>

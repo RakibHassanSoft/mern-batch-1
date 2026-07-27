@@ -1,120 +1,146 @@
-# Blog — JavaScript Version for Beginners (Bangla comments)
+# 📝 Assignment / Task — Blog (JavaScript) বোঝা ও হাতে লেখা রিপোর্ট
 
-এই ফোল্ডারটি আগের blog প্রজেক্টেরই একটি **সহজ সংস্করণ**, বিশেষভাবে beginner-দের জন্য বানানো:
+এই টাস্কে তোমাকে **নিজে কোড পড়ে বুঝতে হবে** — প্রথমে **static** ব্লগ, তারপর **full stack** ব্লগের **connection code**। শেষে একটি **হাতে লেখা (handwritten) রিপোর্ট** বানিয়ে জমা দিতে হবে।
 
-- সব কোড **JavaScript (JSX)** — কোনো TypeScript নেই। (`.jsx` / `.js` ফাইল, type লেখা নেই।)
-- প্রতিটি ফাইলে **ছোট ছোট Bangla comment** আছে যাতে বোঝা সহজ হয়।
-- fullstack version-এ **API call সরাসরি ফাইলের ভেতরেই** করা হয়েছে — আলাদা reusable ফাংশন নেই।
-
-This is a beginner-friendly, **plain JavaScript** copy of the blog. Everything is in `.jsx`/`.js`, each file has short **Bangla comments**, and the API calls are written **directly inside each file** (no helper/wrapper functions).
+> ⏰ **জমা দেওয়ার শেষ সময়: ২৯ তারিখ, রাত ১১:৫৯ (29th, 11:59 PM)।** এর মধ্যেই হাতে লেখা রিপোর্ট সাবমিট করতে হবে।
 
 ---
 
-## ফোল্ডার দুটি (Two folders)
+## 📁 ফোল্ডার দুটি কোথায় (Where the folders are)
 
 ```
 Blog JS (Beginner, Bangla)/
-├── blog-static/        ← শুধু ডিজাইন (fake data, কোনো server নেই)
-└── blog-fullstack/     ← আসল অ্যাপ (frontend + backend + database)
+├── blog-static/        ← ধাপ ১: শুধু ডিজাইন (fake data, server নেই) — এটা আগে বুঝবে
+└── blog-fullstack/     ← ধাপ ২: আসল অ্যাপ (frontend + backend যুক্ত) — এটা পরে বুঝবে
     ├── backend/        ← Node.js + Express + MongoDB API
-    └── frontend/       ← Next.js (JS), সরাসরি axios call
+    └── frontend/       ← Next.js (JS) — server-এর সাথে axios দিয়ে যুক্ত
 ```
 
-1. **`blog-static/`** — শুধু UI/ডিজাইন। ডেটা আসে `lib/data.js` থেকে (fake)। server লাগে না। প্রথমে এটা দিয়ে ডিজাইন বুঝুন।
-2. **`blog-fullstack/`** — আসল অ্যাপ। frontend server (backend)-এর সাথে axios দিয়ে কথা বলে: login, register, create/edit/delete পোস্ট — সব কাজ করে।
+- **`blog-static/`** = শুধু চেহারা/ডিজাইন। ডেটা আসে `lib/data.js` (নকল) থেকে। কিছু save হয় না।
+- **`blog-fullstack/`** = আসল অ্যাপ। এখানে login, register, create/edit/delete — সব সত্যিকারের কাজ করে।
+
+**নিয়ম:** আগে static ভালো করে বুঝবে, তারপর full stack-এ ঢুকবে। তাহলে "connection" বুঝতে সহজ হবে।
 
 ---
 
-## সবচেয়ে গুরুত্বপূর্ণ পার্থক্য: সরাসরি API call ⭐
+# 🟢 Part 1 — Static Blog কোড বোঝো (`blog-static/`)
 
-আগের version-এ আলাদা reusable ফাংশন ছিল (যেমন `loginUser(...)`), যেটা beginner-দের জন্য বোঝা কঠিন। এই version-এ আমরা **সরাসরি axios call** লিখেছি।
+প্রথমে `blog-static/` ফোল্ডারের প্রতিটি ফাইল খুলে পড়ো। প্রতিটি ফাইলে ছোট **Bangla comment** দেওয়া আছে — সেগুলো পড়লেই বুঝবে।
 
-**আগে (কঠিন — এই version-এ নেই):**
-```js
-await loginUser(email, password);   // loginUser আসলে কী করে? লুকানো!
-```
+### যেসব ফাইল বুঝতে হবে (checklist)
+- [ ] `lib/data.js` — নকল ব্লগ ডেটা কেমন দেখতে? প্রতিটি কার্ডে কোন কোন field আছে?
+- [ ] `app/layout.jsx` — Navbar + Footer কীভাবে সব পেজে আসে?
+- [ ] `app/page.jsx` — home পেজ কীভাবে `blogCards.map()` দিয়ে কার্ড দেখায়?
+- [ ] `app/blog/[id]/page.jsx` — URL থেকে `id` নিয়ে কীভাবে একটি কার্ড খুঁজে বের করে?
+- [ ] `components/BlogCard.jsx` — একটি কার্ডের ডিজাইন; `showActions` prop-এর কাজ কী?
+- [ ] `components/CardForm.jsx` — create আর edit-এ কীভাবে একই ফর্ম ব্যবহার হয়?
+- [ ] `components/Navbar.jsx`, `Footer.jsx`, `Button.jsx`, `InputField.jsx`, `TextareaField.jsx`
+- [ ] `app/login/page.jsx`, `app/register/page.jsx`, `app/dashboard/page.jsx`
 
-**এখন (সহজ — সরাসরি বোঝা যায়):**
-```js
-await authApi.post("/api/users/login", { email, password });
-```
-
-এখানে সব পরিষ্কার: কোন **method** (`post`), কোন **URL** (`/api/users/login`), আর কী **data** যাচ্ছে (`{ email, password }`) — এক লাইনেই দেখা যায়।
-
-### দুইটা axios client (`lib/api.js`)
-
-| client | কখন ব্যবহার | উদাহরণ |
-|--------|--------------|--------|
-| `api` | **public** — লগইন লাগে না (পড়া) | `api.get("/api/cards")` |
-| `authApi` | **private** — লগইন লাগে (cookie যায়) | `authApi.post("/api/cards", data)` |
-
-`authApi`-তে `withCredentials: true` দেওয়া আছে, তাই ব্রাউজার cookie নিজে থেকে পাঠায়।
-
-### কোথায় কোন call (সব সরাসরি ফাইলের ভেতরে)
-
-| কাজ | কোড | ফাইল |
-|-----|-----|------|
-| সব পোস্ট পড়া | `api.get("/api/cards")` | `app/page.jsx` |
-| একটি পোস্ট পড়া | `api.get(\`/api/cards/${id}\`)` | `app/blog/[id]/page.jsx` |
-| রেজিস্টার | `authApi.post("/api/users/register", {...})` | `app/register/page.jsx` |
-| লগইন | `authApi.post("/api/users/login", {...})` | `app/login/page.jsx` |
-| লগআউট | `authApi.post("/api/users/logout")` | `components/Navbar.jsx` |
-| আমি কে? | `authApi.get("/api/users/me")` | `components/Navbar.jsx` |
-| আমার পোস্ট | `authApi.get("/api/cards/mine")` | `app/dashboard/page.jsx` |
-| নতুন পোস্ট | `authApi.post("/api/cards", data)` | `components/CardForm.jsx` |
-| পোস্ট এডিট | `authApi.put(\`/api/cards/${id}\`, data)` | `components/CardForm.jsx` |
-| পোস্ট ডিলিট | `authApi.delete(\`/api/cards/${id}\`)` | `app/dashboard/page.jsx` |
+### নিজেকে প্রশ্ন করো (এগুলোর উত্তর রিপোর্টে লিখবে)
+1. **component** কী? props দিয়ে কীভাবে ডেটা পাঠানো হয়? (`BlogCard` উদাহরণ দাও)
+2. `.map()` দিয়ে লিস্ট দেখানো মানে কী?
+3. এই static version-এ Login/Delete বাটন চাপলে কেন কিছু হয় না?
+4. ডেটা কোথা থেকে আসছে? (উত্তর: `lib/data.js` — নকল)
 
 ---
 
-## কীভাবে চালাবেন (How to run)
+# 🔵 Part 2 — Full Stack Blog-এর Connection Code বোঝো (`blog-fullstack/`)
 
-### শুধু ডিজাইন দেখতে চাইলে — `blog-static/`
+static বোঝা হলে এবার `blog-fullstack/frontend/`-এ ঢোকো। এখানে একই ডিজাইন, কিন্তু ডেটা আসে **আসল server** থেকে (axios দিয়ে)। মূল কাজ হলো **connection** বোঝা।
+
+> সাহায্যের জন্য: `blog-fullstack/README.md`-তে static থেকে connected বানানোর পূর্ণ ধাপে-ধাপে টিউটোরিয়াল (BEFORE → AFTER কোড সহ) দেওয়া আছে।
+
+### যেসব connection code বুঝতে হবে (checklist)
+- [ ] `frontend/.env.local` — backend-এর URL এখানে কেন রাখা হয়?
+- [ ] `frontend/lib/api.js` — `api` আর `authApi` — দুটোর পার্থক্য কী? `withCredentials: true` কী করে?
+- [ ] `frontend/app/page.jsx` — `api.get("/api/cards")` দিয়ে কীভাবে সব কার্ড আনে?
+- [ ] `frontend/app/blog/[id]/page.jsx` — `api.get(\`/api/cards/${id}\`)` কীভাবে কাজ করে?
+- [ ] `frontend/app/login/page.jsx` — `authApi.post("/api/users/login", ...)` কীভাবে login করায়?
+- [ ] `frontend/app/register/page.jsx` — `authApi.post("/api/users/register", ...)`
+- [ ] `frontend/components/CardForm.jsx` — `authApi.post` (নতুন) আর `authApi.put` (edit)
+- [ ] `frontend/app/dashboard/page.jsx` — `authApi.get("/api/cards/mine")` আর `authApi.delete(...)`
+- [ ] `frontend/components/Navbar.jsx` — `authApi.get("/api/users/me")` দিয়ে login চেক + logout
+
+### Public vs Private (মূল ধারণা)
+| client | কখন | উদাহরণ |
+|--------|------|--------|
+| `api` | **public** (লগইন লাগে না) | `api.get("/api/cards")` |
+| `authApi` | **private** (লগইন লাগে, cookie যায়) | `authApi.post("/api/cards", data)` |
+
+### নিজেকে প্রশ্ন করো (রিপোর্টে উত্তর দেবে)
+1. static-এর তুলনায় full stack-এ কোন কোন ফাইল **নতুন যোগ** হয়েছে, কোনটা **মুছে** গেছে?
+2. `blogCards` (নকল array) এর বদলে এখন ডেটা কীভাবে আসে?
+3. login করলে **cookie** কীভাবে কাজ করে? পরের request-এ cookie কীভাবে যায়?
+4. GET / POST / PUT / DELETE — প্রতিটি কী কাজে লাগে? একটি করে উদাহরণ দাও।
+5. frontend-এর একটি call (যেমন `authApi.post("/api/users/login")`) backend-এর কোন route-এর সাথে মেলে?
+
+---
+
+## 📊 Request → Response ফ্লো (রিপোর্টে এঁকে দেখাবে)
+
+```
+Browser (frontend :3000)                Server (backend :5000)              Database
+   |   axios দিয়ে request  ───────────▶   route → controller  ──────────▶   MongoDB
+   |   (api / authApi)                      |                                  |
+   |   ◀───────── JSON response ─────────   ◀──────────── data ───────────────  |
+   |   পেজে দেখায়
+```
+
+---
+
+# ✍️ যা জমা দিতে হবে — হাতে লেখা রিপোর্ট (Handwritten Report)
+
+**একটি হাতে লেখা রিপোর্ট** বানাও (কম্পিউটারে টাইপ নয় — নিজ হাতে খাতায় লিখবে), যাতে থাকবে:
+
+1. **নাম, ব্যাচ, তারিখ** — উপরে।
+2. **Part 1 (Static):** উপরের প্রশ্নগুলোর উত্তর নিজের ভাষায়। প্রতিটি মূল ফাইল ২–৩ লাইনে ব্যাখ্যা করো (এই ফাইল কী করে)।
+3. **Part 2 (Connection):** static থেকে full stack-এ কী কী বদলাল — নতুন/মুছে যাওয়া ফাইলের তালিকা, আর প্রতিটি axios call (`api.get`, `authApi.post`, `authApi.put`, `authApi.delete`) কোথায় ও কেন ব্যবহার হয়েছে।
+4. **একটি হাতে আঁকা ডায়াগ্রাম:** উপরের request → response ফ্লো নিজে হাতে আঁকো।
+5. **GET / POST / PUT / DELETE** টেবিল — প্রতিটির মানে ও একটি করে উদাহরণ।
+6. **তোমার শেখা ৩টি জিনিস** — শেষে ছোট করে লেখো।
+
+### 📸 জমা দেওয়ার নিয়ম (Submission)
+- হাতে লেখা রিপোর্টের **পরিষ্কার ছবি তোলো / স্ক্যান করো** (সব পাতা)।
+- একটি **PDF** বানিয়ে জমা দাও (অথবা যেভাবে instructor বলেছে)।
+- ⏰ **শেষ সময়: ২৯ তারিখ, রাত ১১:৫৯ (29th, 11:59 PM)। দেরিতে জমা নেওয়া হবে না।**
+
+---
+
+## ▶️ কোড চালিয়ে দেখতে চাইলে (optional, but recommended)
+
+**Static দেখতে:**
 ```bash
 cd blog-static
 npm install
-npm run dev
+npm run dev        # http://localhost:3000
 ```
-খুলুন **http://localhost:3000**।
 
-### পুরো অ্যাপ চালাতে চাইলে — `blog-fullstack/`
-
-**১) আগে backend চালান:**
+**Full stack চালাতে (২টি terminal):**
 ```bash
+# terminal 1 — backend
 cd blog-fullstack/backend
 npm install
-# .env ফাইলে MONGO_URI, JWT_SECRET, CLIENT_URL, NODE_ENV দিন
-npm run dev
-```
-backend চলবে **http://localhost:5000**-এ।
+# .env-এ MONGO_URI, JWT_SECRET, CLIENT_URL=http://localhost:3000, NODE_ENV=development দাও
+npm run dev        # http://localhost:5000
 
-**২) এবার frontend চালান (নতুন terminal):**
-```bash
+# terminal 2 — frontend
 cd blog-fullstack/frontend
 npm install
-npm run dev
+npm run dev        # http://localhost:3000
 ```
-frontend চলবে **http://localhost:3000**-এ। `.env.local`-এ `NEXT_PUBLIC_API_URL=http://localhost:5000` আগে থেকেই দেওয়া আছে।
 
-**৩)** ব্রাউজারে **http://localhost:3000** খুলে: register → পোস্ট create → edit → delete → logout করে দেখুন।
-
-> দুইটা server (backend `:5000` আর frontend `:3000`) একসাথে চলতে হবে।
+চালিয়ে register → create → edit → delete → logout করে দেখলে রিপোর্ট লেখা আরও সহজ হবে।
 
 ---
 
-## HTTP method গুলো (GET / POST / PUT / DELETE)
+## ✅ Task Checklist (জমা দেওয়ার আগে মিলিয়ে নাও)
+- [ ] `blog-static/` এর সব ফাইল পড়েছি ও বুঝেছি
+- [ ] `blog-fullstack/frontend/` এর connection code বুঝেছি (`api` vs `authApi`)
+- [ ] হাতে লেখা রিপোর্টে Part 1 + Part 2 এর উত্তর লিখেছি
+- [ ] request → response ফ্লো হাতে এঁকেছি
+- [ ] GET/POST/PUT/DELETE টেবিল দিয়েছি
+- [ ] রিপোর্টের পরিষ্কার ছবি/স্ক্যান করে PDF বানিয়েছি
+- [ ] **২৯ তারিখ রাত ১১:৫৯ এর আগে** জমা দিয়েছি
 
-- **GET** — ডেটা **পড়া** (কিছু বদলায় না)। যেমন `api.get("/api/cards")`।
-- **POST** — নতুন কিছু **বানানো**। যেমন `authApi.post("/api/cards", data)`।
-- **PUT** — আগের কিছু **আপডেট** করা। যেমন `authApi.put("/api/cards/1", data)`।
-- **DELETE** — কিছু **মুছে ফেলা**। যেমন `authApi.delete("/api/cards/1")`।
-
-frontend-এর প্রতিটি call, backend-এর একই method-এর route-এর সাথে মিলে যায়।
-
----
-
-## Note
-
-- এই folder-টি সম্পূর্ণ আলাদা (একটা "branch"/copy)। আগের TypeScript version-গুলো অক্ষত আছে।
-- এখানে reusable helper না রাখায় কোড একটু বেশি লেখা লাগে, কিন্তু beginner-দের জন্য **বোঝা সহজ**। কোড বোঝার পর, বড় প্রজেক্টে reusable ফাংশন ব্যবহার করাই ভালো।
-- বিস্তারিত concept-এর জন্য দেখুন: `Next.js Frontend`, `Node.js Backend`, `MongoDB`, আর `blog (frontend + backend)` folder-গুলো।
+শুভকামনা! 🎉 আগে static বোঝো, তারপর connection — ধীরে ধীরে, নিজে কোড পড়ে।

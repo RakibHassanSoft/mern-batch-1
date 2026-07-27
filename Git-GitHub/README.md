@@ -245,4 +245,243 @@ Run these anytime to confirm everything is set up:
 
 ---
 
-**Summary:** Install Git (`git --version`), create a GitHub account, tell Git who you are (`git config`), connect your device (`gh auth login` is easiest), then link a project and `git push`. Use the checklist in Section 8 anytime to confirm you're connected.
+# 🤝 Collaboration — Branches, Merge, Pull & Group Projects
+
+Everything above was for working alone. This part is for working **with a team on one project** — the real reason Git exists. Read it in order.
+
+---
+
+## 11. Branches (work without breaking the main code)
+
+A **branch** is a separate copy of your code where you can work safely. The default branch is `main` — it should always stay working. When you build a new feature, you make a **new branch**, work there, and only merge it back into `main` when it's done and tested.
+
+Think of `main` as the clean published book, and a branch as your rough-draft notebook.
+
+```bash
+git branch                     # list all branches (current one has a *)
+git branch feature-navbar      # create a new branch called feature-navbar
+git switch feature-navbar      # move onto that branch
+git switch -c feature-navbar   # shortcut: create AND switch in one command
+```
+
+Now any `commit` you make happens on `feature-navbar`, and `main` stays untouched.
+
+```bash
+git switch main                # go back to main
+git branch -d feature-navbar   # delete a branch after it's merged (done with it)
+```
+
+**Naming tip:** use clear names like `feature-login`, `fix-navbar-bug`, `sara/homepage`.
+
+### ✅ Check which branch you're on
+```bash
+git branch                     # the * shows your current branch
+git status                     # also shows "On branch ..."
+```
+
+---
+
+## 12. Merging (bring a branch's work into main)
+
+When your branch is finished, you **merge** it into `main` so everyone gets your changes.
+
+```bash
+git switch main                # 1. go to the branch you want to merge INTO
+git pull                       # 2. get the latest main first (important in a team!)
+git merge feature-navbar       # 3. bring feature-navbar's changes into main
+git push                       # 4. upload the updated main to GitHub
+```
+
+Read it as: "stand on `main`, then pull `feature-navbar` into me."
+
+If the changes don't overlap, Git merges automatically. If two people changed the **same lines**, you get a **merge conflict** — see Section 16.
+
+---
+
+## 13. Pull & Push (staying in sync with the team)
+
+In a team, GitHub is the "single source of truth." You constantly **pull** (download others' work) and **push** (upload yours).
+
+```bash
+git pull        # download + merge the latest changes from GitHub into your branch
+git push        # upload your commits to GitHub
+```
+
+**Golden rule:** **`git pull` before you start working, and before you push.** This keeps you up to date and avoids most conflicts.
+
+Typical daily loop in a team:
+```bash
+git switch main
+git pull                       # get everyone's latest work
+git switch -c feature-x        # start your feature on a fresh branch
+# ...code, then...
+git add .
+git commit -m "Add feature x"
+git push -u origin feature-x   # upload YOUR branch to GitHub
+```
+
+`-u origin feature-x` the first time tells Git to remember this branch, so later you can just type `git push`.
+
+---
+
+## 14. Working as a Team (how everyone gets the project)
+
+There are two common ways to set up a team.
+
+### Option A — Everyone is a "collaborator" on one repo (simplest for small groups)
+1. The repo **owner** goes to the repo on GitHub → **Settings** → **Collaborators** → **Add people** → type each teammate's GitHub username → invite.
+2. Each teammate accepts the email/GitHub invite.
+3. Each teammate **clones** the project to their computer:
+```bash
+git clone https://github.com/OWNER/project.git
+cd project
+```
+4. Now everyone can create branches, push them, and open pull requests.
+
+### Option B — Fork + Pull Request (for open source / bigger groups)
+Each person **forks** (makes their own copy of) the repo on GitHub, works in their fork, and opens a pull request back to the original. (Option A is enough for class group projects.)
+
+### ✅ Check you have the project
+```bash
+git remote -v                  # shows the GitHub URL you cloned from
+git log --oneline | head       # shows the recent history
+```
+
+---
+
+## 15. Pull Requests (PR) — the safe way to merge in a team
+
+Instead of merging straight into `main` yourself, teams use a **Pull Request** so others can **review** the code first.
+
+1. Push your branch: `git push -u origin feature-navbar`.
+2. On GitHub, a green **"Compare & pull request"** button appears → click it.
+3. Write a short title + description of what you did → **Create pull request**.
+4. Teammates review, comment, maybe request changes.
+5. When approved, click **Merge pull request** → the branch goes into `main`.
+6. Everyone runs `git switch main && git pull` to get the merged code.
+
+**Why PRs?** Nobody breaks `main` alone, code gets a second pair of eyes, and there's a clear history of who added what.
+
+---
+
+## 16. Merge Conflicts (when two people edit the same lines)
+
+A **conflict** happens when you and a teammate changed the **same lines** of the same file. Git can't guess which to keep, so it asks you. **This is normal — don't panic.**
+
+When it happens, Git marks the file like this:
+```
+<<<<<<< HEAD
+your version of the line
+=======
+your teammate's version of the line
+>>>>>>> feature-navbar
+```
+
+**How to fix:**
+1. Open the file. Decide what the final line should be (keep yours, keep theirs, or combine).
+2. **Delete the `<<<<<<<`, `=======`, `>>>>>>>` marker lines** and leave only the correct final code.
+3. Save, then:
+```bash
+git add .
+git commit -m "Resolve merge conflict"
+git push
+```
+
+**Avoid conflicts:** pull often, keep branches small, and let each person work on **different files** when possible.
+
+---
+
+## 17. 👥 Group Project Task Handling (step-by-step workflow)
+
+Here's a clean workflow a student team can follow for a project.
+
+**Setup (once):**
+1. **One person** creates the GitHub repo and pushes the starter code.
+2. That person adds everyone as **collaborators** (Section 14).
+3. Everyone **clones** the repo.
+
+**Divide the work:**
+4. Split the project into tasks — ideally so each person touches **different files/folders** (e.g. one does the navbar, one does the login page, one does the backend route). This prevents conflicts.
+
+**Each person, for each task:**
+```bash
+git switch main
+git pull                          # 1. always start from the latest main
+git switch -c sara/login-page     # 2. make your own branch (yourname/task)
+# ...do your work...
+git add .
+git commit -m "Build login page"  # 3. commit with a clear message
+git pull origin main              # 4. pull latest main again before pushing (safety)
+git push -u origin sara/login-page # 5. push YOUR branch
+```
+6. Open a **Pull Request** on GitHub → teammates review → **merge** into `main` (Section 15).
+7. Everyone runs `git switch main && git pull` to stay updated.
+
+**Team rules to avoid chaos:**
+- ❌ Never commit directly to `main` — always use a branch + PR.
+- 🔄 `git pull` before you start and before you push.
+- ✂️ Keep branches small and focused (one feature each).
+- ✍️ Write clear commit messages ("Fix navbar spacing", not "update").
+- 🗂️ Agree who owns which files, so two people don't edit the same lines.
+- 🗑️ Delete a branch after it's merged.
+
+### ✅ Team health checks
+```bash
+git status              # anything uncommitted?
+git branch              # which branch am I on?
+git log --oneline -5    # recent commits
+git pull                # am I up to date with the team?
+```
+
+---
+
+## 18. Team Cheat Sheet
+
+```bash
+# start of the day / new task
+git switch main
+git pull
+git switch -c yourname/feature
+
+# while working
+git status
+git add .
+git commit -m "clear message"
+
+# share your work
+git pull origin main            # get latest first
+git push -u origin yourname/feature
+# then open a Pull Request on GitHub
+
+# after your PR is merged
+git switch main
+git pull
+git branch -d yourname/feature  # clean up
+
+# branches & merging
+git branch                      # list
+git switch branch-name          # move
+git merge branch-name           # merge into current branch
+
+# fixing a conflict
+# 1) edit the file, remove <<<<<<< ======= >>>>>>> markers
+git add .
+git commit -m "Resolve merge conflict"
+git push
+```
+
+---
+
+## 19. Team Practice 🏋️ (do this with a partner)
+
+1. Person A creates a repo, pushes a `README.md`, and adds Person B as a collaborator.
+2. Both **clone** the repo.
+3. Person A: `git switch -c a/add-title`, edit the README's title, commit, push, open a PR, merge.
+4. Person B: `git switch main && git pull` — see A's change appear. ✅
+5. Person B: `git switch -c b/add-line`, add a new line, push, open a PR, merge.
+6. Both pull `main` again — now you both have each other's work. 🎉
+7. Bonus: both edit the **same line** on different branches to create a **merge conflict**, then resolve it together (Section 16).
+
+---
+
+**Summary:** Install Git (`git --version`), create a GitHub account, tell Git who you are (`git config`), connect your device (`gh auth login` is easiest), then link a project and `git push`. For **teamwork**: everyone clones the repo, each person works on their **own branch**, pulls often, pushes their branch, and merges via **Pull Requests** — never straight into `main`. Use the checklists to stay in sync and the conflict steps when two people edit the same lines.

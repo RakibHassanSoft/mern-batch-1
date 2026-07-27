@@ -12,11 +12,11 @@ Open the **same file** in both folders and see what changed:
 
 | Open this (static) | …and this (connected) | What differs |
 |--------------------|-----------------------|--------------|
-| `static/app/page.tsx` | `../frontend/app/page.tsx` | `blogCards` array → `getCards()` (axios) |
-| `static/app/blog/[id]/page.tsx` | `../frontend/app/blog/[id]/page.tsx` | `.find()` → `getCard(id)` |
-| `static/components/CardForm.tsx` | `../frontend/components/CardForm.tsx` | static form → controlled form that POSTs/PUTs |
-| `static/app/dashboard/page.tsx` | `../frontend/app/dashboard/page.tsx` | fake slice → `getMyCards()` + real delete |
-| `static/lib/data.ts` | *(gone — replaced by `lib/api.ts` + `lib/cards.ts`)* | fake data removed |
+| `static/app/page.tsx` | `../frontend/app/page.tsx` | `blogCards` array → `api.get("/api/cards")` |
+| `static/app/blog/[id]/page.tsx` | `../frontend/app/blog/[id]/page.tsx` | `.find()` → `api.get("/api/cards/:id")` |
+| `static/components/CardForm.tsx` | `../frontend/components/CardForm.tsx` | static form → controlled form with `authApi.post` / `authApi.put` |
+| `static/app/dashboard/page.tsx` | `../frontend/app/dashboard/page.tsx` | fake slice → `authApi.get("/api/cards/mine")` + `authApi.delete` |
+| `static/lib/data.ts` | *(gone — `lib/` now has only `api.ts`)* | fake data removed |
 
 ## The full step-by-step change list
 
