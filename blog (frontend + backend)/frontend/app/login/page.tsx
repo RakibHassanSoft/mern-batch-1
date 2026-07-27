@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { loginUser } from "@/lib/auth";
+import { authApi } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      await loginUser(email, password); // sets the auth cookie
+      await authApi.post("/api/users/login", { email, password });
       router.push("/dashboard");
       router.refresh();
     } catch {

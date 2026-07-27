@@ -3,8 +3,18 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import CardForm from "@/components/CardForm";
-import { getCard } from "@/lib/cards";
-import type { Card } from "@/lib/types";
+import { api } from "@/lib/api";
+
+type Card = {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  date: string;
+  category: string;
+  image: string;
+};
 
 // EDIT PAGE — fetches the card, then renders the shared form pre-filled (edit mode).
 export default function EditCardPage() {
@@ -15,8 +25,9 @@ export default function EditCardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getCard(id)
-      .then((data) => setCard(data))
+    api
+      .get(`/api/cards/${id}`)
+      .then((res) => setCard(res.data))
       .catch(() => setCard(null))
       .finally(() => setLoading(false));
   }, [id]);

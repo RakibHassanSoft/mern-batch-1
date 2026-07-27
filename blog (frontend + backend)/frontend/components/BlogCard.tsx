@@ -2,10 +2,19 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import type { Card } from "@/lib/types";
 
 // A single blog card. On the dashboard we pass showActions + onDelete
 // to show Edit/Delete buttons.
+
+type Card = {
+  id: string;
+  title: string;
+  excerpt: string;
+  author: string;
+  date: string;
+  category: string;
+  image: string;
+};
 
 type BlogCardProps = {
   card: Card;

@@ -4,8 +4,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getCard } from "@/lib/cards";
-import type { Card } from "@/lib/types";
+import { api } from "@/lib/api";
+
+type Card = {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  date: string;
+  category: string;
+  image: string;
+};
 
 // SINGLE POST PAGE — public. Reads the :id from the URL and fetches that card.
 export default function BlogPostPage() {
@@ -16,8 +26,9 @@ export default function BlogPostPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getCard(id)
-      .then((data) => setCard(data))
+    api
+      .get(`/api/cards/${id}`)
+      .then((res) => setCard(res.data))
       .catch(() => setCard(null))
       .finally(() => setLoading(false));
   }, [id]);

@@ -3,8 +3,26 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "./Button";
-import { createCard, updateCard } from "@/lib/cards";
-import type { Card } from "@/lib/types";
+import { authApi } from "@/lib/api";
+
+type Card = {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  date: string;
+  category: string;
+  image: string;
+};
+
+type CardFormInput = {
+  title: string;
+  category: string;
+  image: string;
+  excerpt: string;
+  content: string;
+};
 
 // Shared form for BOTH creating and editing a card.
 // If `card` is passed -> edit mode (PUT). Otherwise -> create mode (POST).
@@ -37,13 +55,13 @@ export default function CardForm({ card, heading, submitLabel }: CardFormProps) 
     }
 
     setSaving(true);
-    const data = { title, category, image, excerpt, content };
+    const data: CardFormInput = { title, category, image, excerpt, content };
 
     try {
       if (card) {
-        await updateCard(card.id, data); // PROTECTED axios (PUT)
+        await authApi.put(`/api/cards/${card.id}`, data); // PROTECTED axios (PUT)
       } else {
-        await createCard(data); // PROTECTED axios (POST)
+        await authApi.post("/api/cards", data); // PROTECTED axios (POST)
       }
       router.push("/dashboard");
       router.refresh();

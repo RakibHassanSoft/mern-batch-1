@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getMe, logoutUser } from "@/lib/auth";
+import { authApi } from "@/lib/api";
 
 // The navbar checks "am I logged in?" by calling /api/users/me.
 // If yes -> show Dashboard + Logout. If no -> show Login + Sign Up.
@@ -13,13 +13,14 @@ export default function Navbar() {
 
   // Check login state when the navbar first loads
   useEffect(() => {
-    getMe()
+    authApi
+      .get("/api/users/me")
       .then(() => setLoggedIn(true))
       .catch(() => setLoggedIn(false));
   }, []);
 
   const handleLogout = async () => {
-    await logoutUser();
+    await authApi.post("/api/users/logout");
     setLoggedIn(false);
     router.push("/login");
     router.refresh();

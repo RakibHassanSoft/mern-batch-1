@@ -3,8 +3,17 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import BlogCard from "@/components/BlogCard";
-import { getCards } from "@/lib/cards";
-import type { Card } from "@/lib/types";
+import { api } from "@/lib/api";
+
+type Card = {
+  id: string;
+  title: string;
+  excerpt: string;
+  author: string;
+  date: string;
+  category: string;
+  image: string;
+};
 
 // PUBLIC HOME PAGE — fetches all cards with the PUBLIC axios client.
 export default function HomePage() {
@@ -12,8 +21,9 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getCards()
-      .then((data) => setCards(data))
+    api
+      .get("/api/cards")
+      .then((res) => setCards(res.data))
       .catch(() => setCards([]))
       .finally(() => setLoading(false));
   }, []);

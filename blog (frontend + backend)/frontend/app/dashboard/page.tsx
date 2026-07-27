@@ -4,8 +4,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BlogCard from "@/components/BlogCard";
 import Button from "@/components/Button";
-import { getMyCards, deleteCard } from "@/lib/cards";
-import type { Card } from "@/lib/types";
+import { authApi } from "@/lib/api";
+
+type Card = {
+  id: string;
+  title: string;
+  excerpt: string;
+  author: string;
+  date: string;
+  category: string;
+  image: string;
+};
 
 // DASHBOARD — PROTECTED. Fetches only the logged-in user's cards.
 // If the request fails with 401, we send the user to /login.
@@ -16,8 +25,8 @@ export default function DashboardPage() {
 
   const load = async () => {
     try {
-      const data = await getMyCards(); // PROTECTED axios (sends the cookie)
-      setCards(data);
+      const res = await authApi.get("/api/cards/mine");
+      setCards(res.data);
     } catch {
       // Not logged in -> go to login
       router.push("/login");
@@ -33,7 +42,7 @@ export default function DashboardPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this post?")) return;
-    await deleteCard(id);           // PROTECTED axios
+    await authApi.delete(`/api/cards/${id}`); // PROTECTED axios
     setCards((prev) => prev.filter((c) => c.id !== id)); // update the UI
   };
 
