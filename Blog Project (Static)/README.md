@@ -27,10 +27,8 @@ Blog Project (Static)/
 │   ├── Navbar.tsx                 ← top navigation bar
 │   ├── Footer.tsx                 ← bottom footer
 │   ├── Button.tsx                 ← reusable button (primary/outline/danger)
-│   ├── InputField.tsx             ← labelled text input
-│   ├── TextareaField.tsx          ← labelled multi-line input
 │   ├── BlogCard.tsx               ← one card in the grid (with optional actions)
-│   └── CardForm.tsx               ← shared form for create AND edit
+│   └── CardForm.tsx               ← shared form for create AND edit, with direct input markup
 │
 ├── lib/
 │   └── data.ts                    ← sample cards + the BlogCard type
@@ -192,7 +190,7 @@ Example: `text-4xl sm:text-5xl` = big on mobile, bigger on desktop.
 
 **Button** — one component, three looks via the `variant` prop (`primary` filled indigo, `outline` bordered, `danger` red). If you pass `href` it becomes a `<Link>`; otherwise a real `<button>`.
 
-**InputField / TextareaField** — labelled fields with the focus ring. Used by every form. `defaultValue` lets the edit page pre-fill them.
+**Login/Register/Create/Edit forms** — written with direct `<label>`, `<input>`, and `<textarea>` markup for easier reading. Each field is clearly labelled, and helper text explains what to type.
 
 **BlogCard** — the core card: image with a floating category pill, title (clamped to 1 line), excerpt (2 lines), author/date row, and a "Read more" link. Pass `showActions` to also show Edit/Delete buttons (used on the dashboard).
 
@@ -510,89 +508,6 @@ export default function Button({
 }
 ```
 
----
-
-### `components/InputField.tsx`
-
-```tsx
-// A labelled text input, reused across the login/register/card forms.
-
-type InputFieldProps = {
-  label: string;
-  type?: string;        // "text" | "email" | "password" ...
-  name: string;
-  placeholder?: string;
-  defaultValue?: string;
-};
-
-export default function InputField({
-  label,
-  type = "text",
-  name,
-  placeholder,
-  defaultValue,
-}: InputFieldProps) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={name} className="text-sm font-medium text-slate-700">
-        {label}
-      </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        defaultValue={defaultValue}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
-                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-      />
-    </div>
-  );
-}
-```
-
----
-
-### `components/TextareaField.tsx`
-
-```tsx
-// A labelled multi-line text area, used for the blog card content.
-
-type TextareaFieldProps = {
-  label: string;
-  name: string;
-  placeholder?: string;
-  defaultValue?: string;
-  rows?: number;
-};
-
-export default function TextareaField({
-  label,
-  name,
-  placeholder,
-  defaultValue,
-  rows = 6,
-}: TextareaFieldProps) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={name} className="text-sm font-medium text-slate-700">
-        {label}
-      </label>
-      <textarea
-        id={name}
-        name={name}
-        rows={rows}
-        placeholder={placeholder}
-        defaultValue={defaultValue}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm resize-y
-                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-      />
-    </div>
-  );
-}
-```
-
----
 
 ### `components/BlogCard.tsx`
 
@@ -674,8 +589,6 @@ export default function BlogCard({ card, showActions = false }: BlogCardProps) {
 ### `components/CardForm.tsx`
 
 ```tsx
-import InputField from "./InputField";
-import TextareaField from "./TextareaField";
 import Button from "./Button";
 import type { BlogCard } from "@/lib/data";
 
@@ -698,40 +611,80 @@ export default function CardForm({ card, heading, submitLabel }: CardFormProps) 
 
       {/* Card container */}
       <form className="mt-6 bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col gap-5">
-        <InputField
-          label="Title"
-          name="title"
-          placeholder="Enter a catchy title"
-          defaultValue={card?.title}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="title" className="text-sm font-medium text-slate-700">
+            Title <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            placeholder="Enter a catchy title"
+            defaultValue={card?.title}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <p className="text-xs text-slate-500">Give your post a clear title so readers know what to expect.</p>
+        </div>
 
-        <InputField
-          label="Category"
-          name="category"
-          placeholder="e.g. Next.js"
-          defaultValue={card?.category}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="category" className="text-sm font-medium text-slate-700">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="category"
+            name="category"
+            type="text"
+            placeholder="e.g. Next.js"
+            defaultValue={card?.category}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <p className="text-xs text-slate-500">Pick one category such as Next.js, React, or Node.js.</p>
+        </div>
 
-        <InputField
-          label="Cover Image URL"
-          name="image"
-          placeholder="https://..."
-          defaultValue={card?.image}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="image" className="text-sm font-medium text-slate-700">
+            Cover Image URL
+          </label>
+          <input
+            id="image"
+            name="image"
+            type="url"
+            placeholder="https://..."
+            defaultValue={card?.image}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <p className="text-xs text-slate-500">Optional: paste an image URL to show a cover image for your post.</p>
+        </div>
 
-        <InputField
-          label="Short Excerpt"
-          name="excerpt"
-          placeholder="One-line summary shown on the card"
-          defaultValue={card?.excerpt}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="excerpt" className="text-sm font-medium text-slate-700">
+            Short Excerpt <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="excerpt"
+            name="excerpt"
+            type="text"
+            placeholder="One-line summary shown on the card"
+            defaultValue={card?.excerpt}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <p className="text-xs text-slate-500">Write a short summary that explains the main idea.</p>
+        </div>
 
-        <TextareaField
-          label="Content"
-          name="content"
-          placeholder="Write your full post here..."
-          defaultValue={card?.content}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="content" className="text-sm font-medium text-slate-700">
+            Content <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            id="content"
+            name="content"
+            rows={6}
+            placeholder="Write your full post here..."
+            defaultValue={card?.content}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <p className="text-xs text-slate-500">Share your full post content here. Use paragraphs and headings if needed.</p>
+        </div>
 
         {/* Action buttons */}
         <div className="flex gap-3 pt-2">
@@ -894,7 +847,6 @@ export default async function BlogPostPage({
 
 ```tsx
 import Link from "next/link";
-import InputField from "@/components/InputField";
 import Button from "@/components/Button";
 
 // LOGIN PAGE — static form. No auth logic; just the design.
@@ -913,18 +865,33 @@ export default function LoginPage() {
           </p>
 
           <form className="mt-6 flex flex-col gap-4">
-            <InputField
-              label="Email"
-              type="email"
-              name="email"
-              placeholder="you@example.com"
-            />
-            <InputField
-              label="Password"
-              type="password"
-              name="password"
-              placeholder="••••••••"
-            />
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="email" className="text-sm font-medium text-slate-700">
+                Email <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                required
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="password" className="text-sm font-medium text-slate-700">
+                Password <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                required
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              <p className="text-xs text-slate-500">Your password is case-sensitive.</p>
+            </div>
 
             <Button type="submit" variant="primary" className="w-full">
               Log In
@@ -950,7 +917,6 @@ export default function LoginPage() {
 
 ```tsx
 import Link from "next/link";
-import InputField from "@/components/InputField";
 import Button from "@/components/Button";
 
 // REGISTER PAGE — static form. Same design language as login.
@@ -967,23 +933,47 @@ export default function RegisterPage() {
           </p>
 
           <form className="mt-6 flex flex-col gap-4">
-            <InputField
-              label="Full Name"
-              name="name"
-              placeholder="Sara Khan"
-            />
-            <InputField
-              label="Email"
-              type="email"
-              name="email"
-              placeholder="you@example.com"
-            />
-            <InputField
-              label="Password"
-              type="password"
-              name="password"
-              placeholder="At least 6 characters"
-            />
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="name" className="text-sm font-medium text-slate-700">
+                Full Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Sara Khan"
+                required
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="email" className="text-sm font-medium text-slate-700">
+                Email <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                required
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              <p className="text-xs text-slate-500">Use a valid email address so you can log in later.</p>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="password" className="text-sm font-medium text-slate-700">
+                Password <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="At least 6 characters"
+                required
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              <p className="text-xs text-slate-500">Choose a strong password with at least 6 characters.</p>
+            </div>
 
             <Button type="submit" variant="primary" className="w-full">
               Create Account

@@ -1,5 +1,3 @@
-import InputField from "./InputField";
-import TextareaField from "./TextareaField";
 import Button from "./Button";
 import type { BlogCard } from "@/lib/data";
 
@@ -22,40 +20,80 @@ export default function CardForm({ card, heading, submitLabel }: CardFormProps) 
 
       {/* Card container */}
       <form className="mt-6 bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col gap-5">
-        <InputField
-          label="Title"
-          name="title"
-          placeholder="Enter a catchy title"
-          defaultValue={card?.title}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="title" className="text-sm font-medium text-slate-700">
+            Title <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            placeholder="Enter a catchy title"
+            defaultValue={card?.title}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <p className="text-xs text-slate-500">Give your post a clear title so readers know what to expect.</p>
+        </div>
 
-        <InputField
-          label="Category"
-          name="category"
-          placeholder="e.g. Next.js"
-          defaultValue={card?.category}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="category" className="text-sm font-medium text-slate-700">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="category"
+            name="category"
+            type="text"
+            placeholder="e.g. Next.js"
+            defaultValue={card?.category}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <p className="text-xs text-slate-500">Pick one category such as Next.js, React, or Node.js.</p>
+        </div>
 
-        <InputField
-          label="Cover Image URL"
-          name="image"
-          placeholder="https://..."
-          defaultValue={card?.image}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="image" className="text-sm font-medium text-slate-700">
+            Cover Image URL
+          </label>
+          <input
+            id="image"
+            name="image"
+            type="url"
+            placeholder="https://..."
+            defaultValue={card?.image}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <p className="text-xs text-slate-500">Optional: paste an image URL to show a cover image for your post.</p>
+        </div>
 
-        <InputField
-          label="Short Excerpt"
-          name="excerpt"
-          placeholder="One-line summary shown on the card"
-          defaultValue={card?.excerpt}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="excerpt" className="text-sm font-medium text-slate-700">
+            Short Excerpt <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="excerpt"
+            name="excerpt"
+            type="text"
+            placeholder="One-line summary shown on the card"
+            defaultValue={card?.excerpt}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <p className="text-xs text-slate-500">Write a short summary that explains the main idea.</p>
+        </div>
 
-        <TextareaField
-          label="Content"
-          name="content"
-          placeholder="Write your full post here..."
-          defaultValue={card?.content}
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="content" className="text-sm font-medium text-slate-700">
+            Content <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            id="content"
+            name="content"
+            rows={6}
+            placeholder="Write your full post here..."
+            defaultValue={card?.content}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <p className="text-xs text-slate-500">Share your full post content here. Use paragraphs and headings if needed.</p>
+        </div>
 
         {/* Action buttons */}
         <div className="flex gap-3 pt-2">
